@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Check if Symfony version is provided; if not, default to the latest version
+if [ -z "$1" ]; then
+  echo "No Symfony version specified. Installing the latest version."
+  SYMFONY_VERSION=""  # Default to latest if no version is specified
+else
+  SYMFONY_VERSION="$1"
+fi
+
+# Define the app directory
+APP_DIR="./app"
+
+# Check if /app is empty
+if [ "$(ls -A $APP_DIR)" ]; then
+  echo "Warning: The /app directory is not empty."
+  read -p "Do you want to clear all contents in the /app directory and install Symfony ${SYMFONY_VERSION:-latest}? (y/N): " confirm
+  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+    echo "Installation aborted."
+    exit 1
+  fi
+
+  # Remove all contents in /app
+  rm -rf $APP_DIR/* $APP_DIR/.[!.]* $APP_DIR/..?*
+fi
+
+# Run the Symfony installation command with the specified version or latest if none is provided
+echo "Installing Symfony ${SYMFONY_VERSION:-latest}..."
+docker-compose exec app composer create-project symfony/skeleton:"$SYMFONY_VERSION" /app
+
+echo "Symfony ${SYMFONY_VERSION:-latest} has been successfully installed in /app."
